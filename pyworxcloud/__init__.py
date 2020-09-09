@@ -2,6 +2,9 @@ import asyncio
 import concurrent.futures
 import contextlib
 import time
+import logging
+_LOGGER = logging.getLogger(__name__)
+_LOGGER.debug("Basil")
 
 from .worxlandroidapi import *
 
