@@ -212,6 +212,8 @@ class WorxCloud:
         self.mowing_zone = data['dat']['lz']
         self.gps_latitude = None
         self.gps_longitude = None
+        self.multizone_start_distance = data['cfg']['mz']
+        self.multizone_probabilities_values = data['cfg']['mzv']
 
         if "modules" in data['dat']:
             if "4G" in data['dat']['modules']:
