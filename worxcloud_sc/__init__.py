@@ -279,3 +279,6 @@ def pfx_to_pem(pfx_data):
                 f_pem.write(OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert))
         f_pem.close()
         yield t_pem.name
+
+
+_LOGGER.debug("end")
