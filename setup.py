@@ -8,7 +8,6 @@ requirements = ['paho-mqtt==1.5.0',
 
 setuptools.setup(
     name = 'worxcloud_sc',
-    version = __version__,
     description = 'Worx Landroid API library',
     author = 'Morten Trab',
     author_email = 'morten@trab.dk',
