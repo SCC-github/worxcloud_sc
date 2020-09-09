@@ -162,6 +162,8 @@ class WorxCloud:
         import json
 
         data = json.loads(indata)
+        _LOGGER.debug(" Dssssssssssata dump: %s", data)
+
         self.rssi = data['dat']['rsi']
         self.status = data['dat']['ls']
         self.status_description = StateDict[data['dat']['ls']]
