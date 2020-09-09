@@ -60,12 +60,15 @@ UNKNOWN_ERROR = "Unknown error (%s)"
 class WorxCloud:
     """Worx by Landroid Cloud connector."""
     wait = True
+    _LOGGER.debug("twoaaaaaa")
 
     def __init__(self):
         self._worx_mqtt_client_id = ''
         self._worx_mqtt_endpoint = ''
-
+        _LOGGER.debug("twobbbbbbb")
         self._api = WorxLandroidAPI()
+        _LOGGER.debug("twocccccc")
+
 
 
     async def initialize(self, username, password):
