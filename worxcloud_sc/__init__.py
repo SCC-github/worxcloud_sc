@@ -5,6 +5,7 @@ import time
 import logging
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.critical("Basil")
+_LOGGER.debug("two")
 
 from .worxlandroidapi import *
 
