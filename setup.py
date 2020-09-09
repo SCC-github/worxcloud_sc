@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from pyworxcloud import *
+from worxcloud_sc import *
 import setuptools
 
 requirements = ['paho-mqtt==1.5.0',
