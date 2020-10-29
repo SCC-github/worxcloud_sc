@@ -57,7 +57,7 @@ class WorxLandroidAPI():
         payload = json.dumps(payload_data)
 
         callData = self._call('/oauth/token', payload)
-        
+
         return callData
 
     def get_profile(self):

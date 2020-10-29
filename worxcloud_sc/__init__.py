@@ -4,7 +4,6 @@ import contextlib
 import time
 import logging
 _LOGGER = logging.getLogger(__name__)
-_LOGGER.critical("Basil")
 _LOGGER.debug("two")
 
 from .worxlandroidapi import *
@@ -162,7 +161,7 @@ class WorxCloud:
         import json
 
         data = json.loads(indata)
-#        _LOGGER.debug(" Dssssssssssata dump: %s", data)
+        _LOGGER.debug(" Big dump: %s", data)
 
         self.rssi = data['dat']['rsi']
         self.status = data['dat']['ls']
