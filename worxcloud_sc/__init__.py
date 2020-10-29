@@ -162,7 +162,7 @@ class WorxCloud:
         import json
 
         data = json.loads(indata)
-        _LOGGER.debug(" Dssssssssssata dump: %s", data)
+#        _LOGGER.debug(" Dssssssssssata dump: %s", data)
 
         self.rssi = data['dat']['rsi']
         self.status = data['dat']['ls']
@@ -214,6 +214,8 @@ class WorxCloud:
         self.gps_longitude = None
         self.multizone_start_distance = data['cfg']['mz']
         self.multizone_probabilities_values = data['cfg']['mzv']
+        self.rain_s = data['dat']['rain']['s']
+        self.rain_cnt = data['dat']['rain']['cnt']
 
         if "modules" in data['dat']:
             if "4G" in data['dat']['modules']:
