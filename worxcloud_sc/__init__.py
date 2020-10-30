@@ -82,6 +82,8 @@ class WorxCloud:
         return True
 
     def connect(self, dev_id, verify_ssl = True):
+        _LOGGER.debug("connect")
+
         import paho.mqtt.client as mqtt
         self._dev_id = dev_id
         self._get_mac_address()
@@ -146,12 +148,15 @@ class WorxCloud:
         self.mac = self.mac_address
 
     def _forward_on_message(self, client, userdata, message):
+        _LOGGER.debug("_forward_on_message")
         import json
 
         json_message = message.payload.decode('utf-8')
         self._decodeData(json_message)
 
     def getStatus(self):
+        _LOGGER.debug("getStatus")
+
         status = self._api.get_status(self.serial_number)
         status = str(status).replace("'","\"")
 
@@ -240,6 +245,8 @@ class WorxCloud:
         self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
 
     def _fetch(self):
+        _LOGGER.debug("_fetch")
+
         self._api.get_products()
         products = self._api.data
 
@@ -247,6 +254,7 @@ class WorxCloud:
             setattr(self, str(attr), val)
 
     def update(self):
+        _LOGGER.debug("update")
         self.wait = True
 
         self._fetch()
