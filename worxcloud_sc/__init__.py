@@ -12,7 +12,7 @@ __version__ = '1.2.20'
 
 StateDict = {
     0: "Idle",
-    1: "Home2",
+    1: "Home",
     2: "Start sequence",
     3: "Leaving home",
     4: "Follow wire",
@@ -32,7 +32,7 @@ StateDict = {
 }
 
 ErrorDict = {
-    0: "No error2",
+    0: "No error",
     1: "Trapped",
     2: "Lifted",
     3: "Wire missing",
