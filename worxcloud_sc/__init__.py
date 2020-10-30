@@ -263,10 +263,9 @@ class WorxCloud:
 
     def sendData(self, data):
         _LOGGER.debug("sendData")
-        if self.online:
-            _LOGGER.debug("sendData - online")
-            self._mqtt.publish(self.mqtt_in, data, qos=0, retain=False)
-            _LOGGER.debug(" sendData - sent   %s", data)
+        self._mqtt.publish(self.mqtt_in, data, qos=0, retain=False)
+        _LOGGER.debug(" sendData - sent   %s", data)
+
 
 
 @contextlib.contextmanager
