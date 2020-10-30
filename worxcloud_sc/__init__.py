@@ -272,7 +272,6 @@ class WorxCloud:
     def sendData(self, data):
         _LOGGER.debug("sendData")
         self._mqtt.publish(self.mqtt_in, data, qos=0, retain=False)
-
         _LOGGER.debug(" sendData - sent   %s", data)
 
 
