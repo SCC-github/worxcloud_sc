@@ -262,8 +262,12 @@ class WorxCloud:
         return len(products)
 
     def sendData(self, data):
+        _LOGGER.debug("sendData")
         if self.online:
+            _LOGGER.debug("sendData - online")
             self._mqtt.publish(self.mqtt_in, data, qos=0, retain=False)
+            _LOGGER.debug(" sendData - sent   %s", data)
+
 
 @contextlib.contextmanager
 def pfx_to_pem(pfx_data):
