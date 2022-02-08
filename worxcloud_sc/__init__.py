@@ -77,7 +77,7 @@ class WorxCloud:
         self._raw = ''
 
 
-    def initialize(self, username, password):
+    def initialize(self, username, password, type="worx" ):
 
         auth = self._authenticate( username, password, type)
         if auth is False:
