@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
+
 from worxcloud_sc import *
 import setuptools
 
-requirements = ['paho-mqtt==1.5.0',
-                'pyOpenSSL==17.5.0']
+requirements = ['paho-mqtt==1.6.1',
+                'pyOpenSSL==21.0.0',
+                'ratelimit==2.2.1']
+
 
 setuptools.setup(
     name = 'worxcloud_sc',

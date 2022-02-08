@@ -1,14 +1,15 @@
-import asyncio
 import concurrent.futures
 import contextlib
 import time
+from ratelimit import limits, RateLimitException
+
 import logging
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.debug("two")
 
 from .worxlandroidapi import *
 
-__version__ = '1.2.20'
+__version__ = '1.4.11'
 
 StateDict = {
     0: "Idle",
@@ -49,11 +50,16 @@ ErrorDict = {
     14: "Charge error",
     15: "Timeout finding home",
     16: "Locked",
-    17: "Battery temperature error"
+    17: "Battery temperature error",
+    18: 'dummy model',
+    19: 'Battery trunk open timeout',
+    20: 'wire sync',
+    21: 'msg num'
 }
 
 UNKNOWN_ERROR = "Unknown error (%s)"
-
+POLL_LIMIT_PERIOD = 30 #s
+POLL_CALLS_LIMIT = 1 #polls per timeframe
 
 
 class WorxCloud:
@@ -68,12 +74,12 @@ class WorxCloud:
         self._api = WorxLandroidAPI()
         _LOGGER.debug("twocccccc")
 
+        self._raw = ''
 
 
-    async def initialize(self, username, password):
-        loop = asyncio.get_running_loop()
+    def initialize(self, username, password):
 
-        auth = await loop.run_in_executor(None, self._authenticate, username, password)
+        auth = self._authenticate( username, password, type)
         if auth is False:
             self._auth_result = False
             return None
@@ -101,7 +107,6 @@ class WorxCloud:
 
         conn_res = self._mqtt.connect(self._worx_mqtt_endpoint, port=8883, keepalive=600)
         if (conn_res):
-            #self._auth_result = False
             return None
 
         self._mqtt.loop_start()
@@ -116,8 +121,8 @@ class WorxCloud:
     def auth_result(self):
         return self._auth_result
 
-    def _authenticate(self, username, password):
-        auth_data = self._api.auth(username, password)
+    def _authenticate(self, username, password, type):
+        auth_data = self._api.auth(username, password, type)
 
         try:
             self._api.set_token(auth_data['access_token'])
@@ -159,6 +164,7 @@ class WorxCloud:
 
         status = self._api.get_status(self.serial_number)
         status = str(status).replace("'","\"")
+        self._raw = status
 
         self._decodeData(status)
 
@@ -170,11 +176,16 @@ class WorxCloud:
 
 
         if 'dat' in data:
+            self.firmware = data['dat']['fw']
+            self.mowing_zone = 0 if data['dat']['lz'] == 8 else data['dat']['lz']
             self.rssi = data['dat']['rsi']
             self.status = data['dat']['ls']
             self.status_description = StateDict[data['dat']['ls']]
             self.error = data['dat']['le']
-            self.error_description = ErrorDict[data['dat']['le']]
+            if data['dat']['le'] in ErrorDict:
+                self.error_description = ErrorDict[data['dat']['le']]
+            else:
+                self.error_description = f"Unknown error"
             self.current_zone = data['dat']['lz']
             self.locked = data['dat']['lk']
             if 'bt' in data['dat']:
@@ -183,20 +194,30 @@ class WorxCloud:
                 self.battery_percent = data['dat']['bt']['p']
                 self.battery_charging = data['dat']['bt']['c']
                 self.battery_charge_cycle = data['dat']['bt']['nr']
+                if self.battery_charge_cycles_reset != None:
+                    self.battery_charge_cycle_current = self.battery_charge_cycle - self.battery_charge_cycles_reset
+                    if self.battery_charge_cycle_current < 0: self.battery_charge_cycle_current = 0
+                else:
+                    self.battery_charge_cycle_current = self.battery_charge_cycle
             if 'st' in data['dat']:
                 self.blade_time = data['dat']['st']['b']
+                if self.blade_work_time_reset != None:
+                    self.blade_time_current = self.blade_time - self.blade_work_time_reset
+                    if self.blade_time_current < 0: self.blade_time_current = 0
+                else:
+                    self.blade_time_current = self.blade_time
                 self.distance = data['dat']['st']['d']
                 self.work_time = data['dat']['st']['wt']
             if 'dmp' in data['dat']:
                 self.pitch = data['dat']['dmp'][0]
                 self.roll = data['dat']['dmp'][1]
                 self.yaw = data['dat']['dmp'][2]
-            self.firmware = data['dat']['fw']
-            self.mowing_zone = data['dat']['lz']
             if "rain" in data['dat']:
                 self.rain_s = data['dat']['rain']['s']
                 self.rain_cnt = data['dat']['rain']['cnt']
-            if "modules" in data['dat']:
+            if 'modules' in data['dat']:
+                self.gps_latitude = None
+                self.gps_longitude = None
                 if "4G" in data['dat']['modules']:
                     self.gps_latitude = data['dat']['modules']['4G']['gps']['coo'][0]
                     self.gps_longitude = data['dat']['modules']['4G']['gps']['coo'][1]
@@ -204,7 +225,10 @@ class WorxCloud:
         if 'cfg' in data:
             self.updated = data["cfg"]["tm"] + " " + data["cfg"]["dt"]
             if 'sc' in data['cfg']:
-                self.schedule_mower_active = data['cfg']['sc']['m']
+                self.ots_enabled = True if 'ots' in data['cfg']['sc'] else False
+                self.schedule_mower_active = True if str(data['cfg']['sc']['m']) == "1" else False
+                self.partymode_enabled = True if str(data['cfg']['sc']['m']) == "2" else False
+                self.partymode = True if "distm" in data['cfg']['sc'] else False
                 self.schedule_variation = data['cfg']['sc']['p']
                 self.schedule_day_sunday_start = data['cfg']['sc']['d'][0][0]
                 self.schedule_day_sunday_duration = data['cfg']['sc']['d'][0][1]
@@ -227,19 +251,27 @@ class WorxCloud:
                 self.schedule_day_saturday_start = data['cfg']['sc']['d'][6][0]
                 self.schedule_day_saturday_duration = data['cfg']['sc']['d'][6][1]
                 self.schedule_day_saturday_boundary = data['cfg']['sc']['d'][6][2]
+
             self.rain_delay = data['cfg']['rd']
             self.multizone_start_distance = data['cfg']['mz']
             self.multizone_probabilities_values = data['cfg']['mzv']
             self.serial = data['cfg']['sn']
 
-
-        self.gps_latitude = None
-        self.gps_longitude = None
-
+        self.islocked = True if self.locked == 1 else False
         self.wait = False
 
     def _on_connect(self, client, userdata, flags, rc):
         client.subscribe(self.mqtt_out)
+
+    @limits(calls=POLL_CALLS_LIMIT, period=POLL_LIMIT_PERIOD)
+    def _poll(self):
+        self._mqtt.publish(self.mqtt_in, '{"cmd":0}', qos=0, retain=False)
+
+    def tryToPoll(self):
+        try:
+            self._poll()
+        except RateLimitException as exception:
+            return f"The rate limit of {POLL_CALLS_LIMIT} status polls per {POLL_LIMIT_PERIOD} seconds has been exceeded. Please wait {round(exception.period_remaining)} seconds before polling again."
 
     def start(self):
         self._mqtt.publish(self.mqtt_in, '{"cmd":1}', qos=0, retain=False)
@@ -250,9 +282,29 @@ class WorxCloud:
     def stop(self):
         self._mqtt.publish(self.mqtt_in, '{"cmd":3}', qos=0, retain=False)
 
+    def zonetraining(self):
+        self._mqtt.publish(self.mqtt_in, '{"cmd":4}', qos=0, retain=False)
+
+    def lock(self, enabled):
+        if enabled:
+            self._mqtt.publish(self.mqtt_in, '{"cmd":5}', qos=0, retain=False)
+        else:
+            self._mqtt.publish(self.mqtt_in, '{"cmd":6}', qos=0, retain=False)
+
+    def restart(self):
+        self._mqtt.publish(self.mqtt_in, '{"cmd":7}', qos=0, retain=False)
+
     def setRainDelay(self, rainDelay):
         msg = '{"rd": %s}' % (rainDelay)
         self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
+
+    def enableSchedule(self, enable):
+        if enable:
+            msg = '{"sc": {"m": 1}}'
+            self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
+        else:
+            msg = '{"sc": {"m": 0}}'
+            self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
 
     def _fetch(self):
         _LOGGER.debug("_fetch")
@@ -283,6 +335,26 @@ class WorxCloud:
         _LOGGER.debug("sendData")
         self._mqtt.publish(self.mqtt_in, data, qos=0, retain=False)
         _LOGGER.debug(" sendData - sent   %s", data)
+
+
+    def partyMode(self, enabled):
+        if self.online:
+            if enabled:
+                msg = '{"sc": {"m": 2, "distm": 0}}'
+                self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
+            else:
+                msg = '{"sc": {"m": 1, "distm": 0}}'
+                self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
+
+    def setZone(self, zone):
+        if self.online:
+            msg = '{"mz":' + zone + '}'
+            self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
+
+    def startEdgecut(self):
+        if self.online:
+            msg = '{"sc":{"ots":{"bc":1,"wtm":0}}}'
+            self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
 
 
 
