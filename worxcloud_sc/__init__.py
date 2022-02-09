@@ -185,7 +185,7 @@ class WorxCloud:
             if data['dat']['le'] in ErrorDict:
                 self.error_description = ErrorDict[data['dat']['le']]
             else:
-                self.error_description = f"Unknown error"
+                self.error_description = "Unknown error"
             self.current_zone = data['dat']['lz']
             self.locked = data['dat']['lk']
             if 'bt' in data['dat']:
