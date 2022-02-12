@@ -129,6 +129,11 @@ class WorxCloud:
         return self._auth_result
 
     def _authenticate(self, username, password, type):
+        _LOGGER.debug("_auth")
+        _LOGGER.debug("username: %s",username)
+        _LOGGER.debug("password: %s",password)
+        _LOGGER.debug("type: %s",type)
+
         auth_data = self._api.auth(username, password, type)
 
         try:
@@ -138,7 +143,6 @@ class WorxCloud:
             self._api.get_profile()
             profile = self._api.data
             self._worx_mqtt_endpoint = profile['mqtt_endpoint']
-
             self._worx_mqtt_client_id = 'android-' + self._api.uuid
         except:
             return False
