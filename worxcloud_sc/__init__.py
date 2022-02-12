@@ -137,17 +137,26 @@ class WorxCloud:
         auth_data = self._api.auth(username, password, type)
 
         try:
+            _LOGGER.debug("1")
             self._api.set_token(auth_data['access_token'])
+            _LOGGER.debug("2")
             self._api.set_token_type(auth_data['token_type'])
-
+            _LOGGER.debug("3")
             self._api.get_profile()
+            _LOGGER.debug("4")
             profile = self._api.data
+            _LOGGER.debug("5")
             self._worx_mqtt_endpoint = profile['mqtt_endpoint']
+            _LOGGER.debug("6")
             self._worx_mqtt_client_id = 'android-' + self._api.uuid
+            _LOGGER.debug("7")
+
         except:
+            _LOGGER.debug("8")
             return False
 
     @contextlib.contextmanager
+
     def _get_cert(self):
         import base64
 
