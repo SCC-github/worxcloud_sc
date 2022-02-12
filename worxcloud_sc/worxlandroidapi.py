@@ -96,11 +96,19 @@ class WorxLandroidAPI():
 
     def _call(self, path, payload=None):
         import requests
-
+        import logging
+        _LOGGER = logging.getLogger(__name__)
+        _LOGGER.debug("_call")
+        _LOGGER.debug("username: %s",username)
+        _LOGGER.debug("password: %s",password)
+        _LOGGER.debug("type: %s",type)
         try:
             if payload:
+                _LOGGER.debug("path: %s",path)
+                _LOGGER.debug("payload: %s",payload)
                 req = requests.post(self._api_host + path, data=payload, headers=self._get_headers(), timeout=10)
             else:
+                _LOGGER.debug("path2: %s",path)
                 req = requests.get(self._api_host + path, headers=self._get_headers(), timeout=10)
 
 
