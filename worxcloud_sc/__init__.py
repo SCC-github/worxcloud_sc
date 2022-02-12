@@ -78,9 +78,13 @@ class WorxCloud:
 
 
     def initialize(self, username, password, type="worx" ):
+        _LOGGER.debug("initialose")
 
         auth = self._authenticate( username, password, type)
+        _LOGGER.debug("Authenticcateised")
+
         if auth is False:
+            _LOGGER.debug("suspect here")
             self._auth_result = False
             return None
 
