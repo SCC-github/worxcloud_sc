@@ -99,9 +99,6 @@ class WorxLandroidAPI():
         import logging
         _LOGGER = logging.getLogger(__name__)
         _LOGGER.debug("_call")
-        _LOGGER.debug("username: %s",username)
-        _LOGGER.debug("password: %s",password)
-        _LOGGER.debug("type: %s",type)
         try:
             if payload:
                 _LOGGER.debug("path: %s",path)
