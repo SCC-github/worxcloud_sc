@@ -72,7 +72,7 @@ class WorxCloud:
         self._worx_mqtt_endpoint = ''
         _LOGGER.debug("twobbbbbbb")
         self._api = WorxLandroidAPI()
-        _LOGGER.debug("twocccccc")
+        _LOGGER.debug("twoccccccd")
 
         self._raw = ''
 
