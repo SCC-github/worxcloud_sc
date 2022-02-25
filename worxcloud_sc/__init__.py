@@ -233,7 +233,10 @@ class WorxCloud:
                 self.roll = data['dat']['dmp'][1]
                 self.yaw = data['dat']['dmp'][2]
             if "rain" in data['dat']:
-                self.rain_s = data['dat']['rain']['s']
+                if "s" in data['dat']['rain']:
+                    self.rain_s = data['dat']['rain']['s']
+                else:
+                    self.rain_s = "None1"
                 self.rain_cnt = data['dat']['rain']['cnt']
             if 'modules' in data['dat']:
                 self.gps_latitude = None
