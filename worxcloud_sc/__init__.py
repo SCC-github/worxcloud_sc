@@ -232,8 +232,8 @@ class WorxCloud:
                 self.pitch = data['dat']['dmp'][0]
                 self.roll = data['dat']['dmp'][1]
                 self.yaw = data['dat']['dmp'][2]
-            if "rain" in data['dat']:
-                if "s" in data['dat']['rain']:
+            if 'rain' in data['dat']:
+                if 's' in data['dat']['rain']:
                     self.rain_s = data['dat']['rain']['s']
                 else:
                     self.rain_s = "0"
@@ -241,7 +241,7 @@ class WorxCloud:
             if 'modules' in data['dat']:
                 self.gps_latitude = None
                 self.gps_longitude = None
-                if "4G" in data['dat']['modules']:
+                if '4G' in data['dat']['modules']:
                     self.gps_latitude = data['dat']['modules']['4G']['gps']['coo'][0]
                     self.gps_longitude = data['dat']['modules']['4G']['gps']['coo'][1]
 
