@@ -236,7 +236,7 @@ class WorxCloud:
                 if "s" in data['dat']['rain']:
                     self.rain_s = data['dat']['rain']['s']
                 else:
-                    self.rain_s = "None1"
+                    self.rain_s = "0"
                 self.rain_cnt = data['dat']['rain']['cnt']
             if 'modules' in data['dat']:
                 self.gps_latitude = None
