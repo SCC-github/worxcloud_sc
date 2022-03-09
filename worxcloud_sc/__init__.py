@@ -77,7 +77,7 @@ class WorxCloud:
         self._raw = ''
 
 
-    def initialize(self, username, password, type="worx" ):
+    def initialize(self, username, password, type="worx" ) -> bool:
         _LOGGER.debug("initialose")
         _LOGGER.debug("username: %s",username)
         _LOGGER.debug("password: %s",password)
@@ -89,12 +89,12 @@ class WorxCloud:
         if auth is False:
             _LOGGER.debug("suspect here")
             self._auth_result = False
-            return None
+            return False
 
         self._auth_result = True
         return True
 
-    def connect(self, dev_id, verify_ssl = True):
+    def connect(self, dev_id, verify_ssl = True) -> bool:
         _LOGGER.debug("connect")
 
         import paho.mqtt.client as mqtt
@@ -114,7 +114,7 @@ class WorxCloud:
 
         conn_res = self._mqtt.connect(self._worx_mqtt_endpoint, port=8883, keepalive=600)
         if (conn_res):
-            return None
+            return False
 
         self._mqtt.loop_start()
         mqp = self._mqtt.publish(self.mqtt_in, '{}', qos=0, retain=False)
@@ -125,7 +125,7 @@ class WorxCloud:
 
 
     @property
-    def auth_result(self):
+    def auth_result(self)  -> bool:
         return self._auth_result
 
     def _authenticate(self, username, password, type):
