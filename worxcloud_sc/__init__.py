@@ -233,6 +233,7 @@ class WorxCloud:
                 self.roll = data['dat']['dmp'][1]
                 self.yaw = data['dat']['dmp'][2]
             if 'rain' in data['dat']:
+                _LOGGER.info("big dump in rain:  %s", data)
                 if 's' in data['dat']['rain']:
                     self.rain_s = data['dat']['rain']['s']
                 else:
@@ -274,12 +275,10 @@ class WorxCloud:
                 self.schedule_day_saturday_start = data['cfg']['sc']['d'][6][0]
                 self.schedule_day_saturday_duration = data['cfg']['sc']['d'][6][1]
                 self.schedule_day_saturday_boundary = data['cfg']['sc']['d'][6][2]
-
             self.rain_delay = data['cfg']['rd']
             self.multizone_start_distance = data['cfg']['mz']
             self.multizone_probabilities_values = data['cfg']['mzv']
             self.serial = data['cfg']['sn']
-
         self.islocked = True if self.locked == 1 else False
         self.wait = False
 
