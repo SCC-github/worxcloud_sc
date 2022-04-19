@@ -102,36 +102,39 @@ class WorxLandroidAPI():
     def _call(self, path, payload=None):
         import json
         import requests
-
+        _LOGGER.debug("_call")
         try:
             if payload:
+                _LOGGER.debug("path: %s",path)
+                _LOGGER.debug("payload: %s",payload)
                 req = requests.post(self._api_host + path, data=payload, headers=self._get_headers(), timeout=10)
             else:
+                _LOGGER.debug("path2: %s",path)
                 req = requests.get(self._api_host + path, headers=self._get_headers(), timeout=10)
 
             if not req.ok:
-                response = {}
-                response["return_code"] = req.status_code
-                response["original_response"] = req.json()
-                if req.status_code == 400:
-                    response["error"] = "Bad request"
-                    _LOGGER.error("Error: Bad request")
-                elif req.status_code == 401:
-                    response["error"] = "Unauthorized"
-                    _LOGGER.error("Error: Unauthorized")
-                elif req.status_code == 404:
-                    response["error"] = "API endpoint doesn't exist"
-                    _LOGGER.error("Error: API endpoint doesn't exist")
-                elif req.status_code == 500:
-                    response["error"] = "Internal server error"
-                    _LOGGER.error("Error: Internal server error")
-                elif req.status_code == 503:
-                    response["error"] = "Service unavailable"
-                    _LOGGER.error("Error: Service unavailable")
-                else:
-                    response["error"] = "Unknown error"
-                    _LOGGER.error("Error: Return code %s was received - unknown error", req.status_code)
-                return json.dumps(response)
+                 response = {}
+                 response["return_code"] = req.status_code
+                 response["original_response"] = req.json()
+                 if req.status_code == 400:
+                     response["error"] = "Bad request"
+                     _LOGGER.error("Error: Bad request")
+                 elif req.status_code == 401:
+                     response["error"] = "Unauthorized"
+                     _LOGGER.error("Error: Unauthorized")
+                 elif req.status_code == 404:
+                     response["error"] = "API endpoint doesn't exist"
+                     _LOGGER.error("Error: API endpoint doesn't exist")
+                 elif req.status_code == 500:
+                     response["error"] = "Internal server error"
+                     _LOGGER.error("Error: Internal server error")
+                 elif req.status_code == 503:
+                     response["error"] = "Service unavailable"
+                     _LOGGER.error("Error: Service unavailable")
+                 else:
+                     response["error"] = "Unknown error"
+                     _LOGGER.error("Error: Return code %s was received - unknown error", req.status_code)
+                 return json.dumps(response)
         except TimeoutError:
             response = {"error": "timeout"}
             _LOGGER.warning("Error: Timeout in communication with API service")
@@ -142,7 +145,6 @@ class WorxLandroidAPI():
             return json.dumps(response)
 
         return req.json()
-
 
     @property
     def data(self):

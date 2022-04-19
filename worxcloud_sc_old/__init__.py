@@ -1,14 +1,15 @@
 import concurrent.futures
 import contextlib
-import logging
 import time
 from ratelimit import limits, RateLimitException
 
+import logging
+_LOGGER = logging.getLogger(__name__)
+_LOGGER.debug("two")
+
 from .worxlandroidapi import *
 
-__version__ = '1.4.13'
-
-_LOGGER = logging.getLogger(__name__)
+__version__ = '1.4.12'
 
 StateDict = {
     0: "Idle",
@@ -64,19 +65,29 @@ POLL_CALLS_LIMIT = 1 #polls per timeframe
 class WorxCloud:
     """Worx by Landroid Cloud connector."""
     wait = True
+    _LOGGER.debug("twoaaaaaa")
 
     def __init__(self):
         self._worx_mqtt_client_id = ''
         self._worx_mqtt_endpoint = ''
-
+        _LOGGER.debug("twobbbbbbb")
         self._api = WorxLandroidAPI()
+        _LOGGER.debug("twoccccccd")
 
         self._raw = ''
 
+
     def initialize(self, username, password, type="worx" ) -> bool:
-        """Usable types are: worx, kress and landxcape."""
+        _LOGGER.debug("initialose")
+        _LOGGER.debug("username: %s",username)
+        _LOGGER.debug("password: %s",password)
+        _LOGGER.debug("type: %s",type)
+
         auth = self._authenticate( username, password, type)
+        _LOGGER.debug("Authenticcateised")
+
         if auth is False:
+            _LOGGER.debug("suspect here")
             self._auth_result = False
             return False
 
@@ -84,6 +95,8 @@ class WorxCloud:
         return True
 
     def connect(self, dev_id, verify_ssl = True) -> bool:
+        _LOGGER.debug("connect")
+
         import paho.mqtt.client as mqtt
         self._dev_id = dev_id
         self._get_mac_address()
@@ -110,26 +123,40 @@ class WorxCloud:
 
         return True
 
+
     @property
-    def auth_result(self) -> bool:
+    def auth_result(self)  -> bool:
         return self._auth_result
 
     def _authenticate(self, username, password, type):
+        _LOGGER.debug("_auth")
+        _LOGGER.debug("username: %s",username)
+        _LOGGER.debug("password: %s",password)
+        _LOGGER.debug("type: %s",type)
+
         auth_data = self._api.auth(username, password, type)
 
         try:
+            _LOGGER.debug("1")
             self._api.set_token(auth_data['access_token'])
+            _LOGGER.debug("2")
             self._api.set_token_type(auth_data['token_type'])
-
+            _LOGGER.debug("3")
             self._api.get_profile()
+            _LOGGER.debug("4")
             profile = self._api.data
+            _LOGGER.debug("5")
             self._worx_mqtt_endpoint = profile['mqtt_endpoint']
-
+            _LOGGER.debug("6")
             self._worx_mqtt_client_id = 'android-' + self._api.uuid
+            _LOGGER.debug("7")
+
         except:
+            _LOGGER.debug("8")
             return False
 
     @contextlib.contextmanager
+
     def _get_cert(self):
         import base64
 
@@ -146,12 +173,15 @@ class WorxCloud:
         self.mac = self.mac_address
 
     def _forward_on_message(self, client, userdata, message):
+        _LOGGER.debug("_forward_on_message")
         import json
 
         json_message = message.payload.decode('utf-8')
         self._decodeData(json_message)
 
     def getStatus(self):
+        _LOGGER.debug("getStatus")
+
         status = self._api.get_status(self.serial_number)
         status = str(status).replace("'","\"")
         self._raw = status
@@ -162,6 +192,9 @@ class WorxCloud:
         import json
 
         data = json.loads(indata)
+        _LOGGER.debug(" Big dump: %s", data)
+
+
         if 'dat' in data:
             self.firmware = data['dat']['fw']
             self.mowing_zone = 0 if data['dat']['lz'] == 8 else data['dat']['lz']
@@ -200,6 +233,7 @@ class WorxCloud:
                 self.roll = data['dat']['dmp'][1]
                 self.yaw = data['dat']['dmp'][2]
             if 'rain' in data['dat']:
+                _LOGGER.info("big dump in rain:  %s", data)
                 if 's' in data['dat']['rain']:
                     self.rain_s = data['dat']['rain']['s']
                 else:
@@ -208,7 +242,7 @@ class WorxCloud:
             if 'modules' in data['dat']:
                 self.gps_latitude = None
                 self.gps_longitude = None
-                if "4G" in data['dat']['modules']:
+                if '4G' in data['dat']['modules']:
                     self.gps_latitude = data['dat']['modules']['4G']['gps']['coo'][0]
                     self.gps_longitude = data['dat']['modules']['4G']['gps']['coo'][1]
 
@@ -260,7 +294,7 @@ class WorxCloud:
         try:
             self._poll()
         except RateLimitException as exception:
-            return "The rate limit of {POLL_CALLS_LIMIT} status polls per {POLL_LIMIT_PERIOD} seconds has been exceeded. Please wait {round(exception.period_remaining)} seconds before polling again."
+            return f"The rate limit of {POLL_CALLS_LIMIT} status polls per {POLL_LIMIT_PERIOD} seconds has been exceeded. Please wait {round(exception.period_remaining)} seconds before polling again."
 
     def start(self):
         self._mqtt.publish(self.mqtt_in, '{"cmd":1}', qos=0, retain=False)
@@ -296,6 +330,8 @@ class WorxCloud:
             self._mqtt.publish(self.mqtt_in, msg, qos=0, retain=False)
 
     def _fetch(self):
+        _LOGGER.debug("_fetch")
+
         self._api.get_products()
         products = self._api.data
 
@@ -303,6 +339,7 @@ class WorxCloud:
             setattr(self, str(attr), val)
 
     def update(self):
+        _LOGGER.debug("update")
         self.wait = True
 
         self._fetch()
@@ -318,8 +355,10 @@ class WorxCloud:
         return len(products)
 
     def sendData(self, data):
-        if self.online:
-            self._mqtt.publish(self.mqtt_in, data, qos=0, retain=False)
+        _LOGGER.debug("sendData")
+        self._mqtt.publish(self.mqtt_in, data, qos=0, retain=False)
+        _LOGGER.debug(" sendData - sent   %s", data)
+
 
     def partyMode(self, enabled):
         if self.online:
@@ -361,3 +400,6 @@ def pfx_to_pem(pfx_data):
                 f_pem.write(OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert))
         f_pem.close()
         yield t_pem.name
+
+
+_LOGGER.debug("end")
