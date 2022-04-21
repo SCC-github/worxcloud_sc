@@ -1,8 +1,3 @@
-
-
-
-
-
 import concurrent.futures
 import contextlib
 import logging
@@ -11,6 +6,7 @@ import time
 from ratelimit import RateLimitException, limits
 
 from .worxlandroidapi import *
+__version__ = '1.4.20'
 
 _LOGGER = logging.getLogger(__name__)
 
