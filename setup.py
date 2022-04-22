@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name = 'worxcloud_sc',\
-    version="1.4.19",
+    version="1.4.20",
     description = 'Worx Landroid API library',
     author = 'Morten Trab',
     author_email = 'morten@trab.dk',
