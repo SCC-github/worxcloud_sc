@@ -226,6 +226,8 @@ class WorxCloud:
             self.updated = data["cfg"]["tm"] + " " + data["cfg"]["dt"]
             self.rain_delay = data["cfg"]["rd"]
             self.serial = data["cfg"]["sn"]
+            self.multizone_start_distance = data['cfg']['mz']
+            self.multizone_probabilities_values = data['cfg']['mzv']
             if "sc" in data["cfg"]:
                 self.ots_enabled = True if "ots" in data["cfg"]["sc"] else False
                 self.schedule_mower_active = (
